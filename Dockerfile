@@ -42,6 +42,10 @@ RUN mkdir -p /var/lib/shellinabox /var/log/shellinabox \
 # Port mặc định của shellinabox (web terminal)
 EXPOSE 4200
 
-# Chạy dưới user không phải root; thay đổi CMD nếu cần options khác
-USER shellinabox
+# Copy entrypoint script và cấp quyền thực thi
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Sử dụng entrypoint để tạo user động
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["shellinaboxd", "-t", "-s", "/:LOGIN"]

@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  shellinabox:
+    build: .
+    ports:
+      - "4200:4200"
+    environment:
+      - NEW_USER=test
+      - NEW_PASS=1234
+    container_name: shellinabox
+    restart: unless-stopped
