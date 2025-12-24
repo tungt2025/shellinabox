@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpam0g-dev \
     libjson-c-dev \
     wget \
+    openssh-client \
+    openssh-server \
     && rm -rf /var/lib/apt/lists/*
 
 # Thư mục làm việc
