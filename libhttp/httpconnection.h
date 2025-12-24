@@ -135,9 +135,11 @@ void httpSetCallback(struct HttpConnection *http,
                                      const char *, int), void *arg);
 void *httpGetPrivate(struct HttpConnection *http);
 void *httpSetPrivate(struct HttpConnection *http, void *private);
+
 void httpSendReply(struct HttpConnection *http, int code,
                    const char *msg, const char *fmt, ...)
   __attribute__((format(printf, 4, 5)));
+
 void httpSendWebSocketTextMsg(struct HttpConnection *http, int type,
                               const char *fmt, ...)
   __attribute__((format(printf, 3, 4)));

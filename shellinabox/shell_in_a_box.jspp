@@ -333,44 +333,88 @@ ShellInABox.prototype.toggleSSL = function() {
   }
 };
 
-ShellInABox.prototype.extendContextMenu = function(entries, actions) {
-  // Modify the entries and actions in place, adding any locally defined
-  // menu entries.
-  var oldActions            = [ ];
-  for (var i = 0; i < actions.length; i++) {
-    oldActions[i]           = actions[i];
-  }
-  for (var node = entries.firstChild, i = 0, j = 0; node;
-       node = node.nextSibling) {
-    if (node.tagName == 'LI') {
-      actions[i++]          = oldActions[j++];
-      if (node.id == "endconfig") {
-        node.id             = '';
-        if (typeof serverSupportsSSL != 'undefined' && serverSupportsSSL &&
-            !(typeof disableSSLMenu != 'undefined' && disableSSLMenu)) {
-          // If the server supports both SSL and plain text connections,
-          // provide a menu entry to switch between the two.
-          var newNode       = document.createElement('li');
-          var isSecure;
-          if (document.location.hash != '') {
-            isSecure        = !this.nextUrl.match(/\?plain$/);
-          } else {
-            isSecure        =  this.nextUrl.match(/^https:/);
-          }
-          newNode.innerHTML = (isSecure ? '&#10004; ' : '') + 'Secure';
-          if (node.nextSibling) {
-            entries.insertBefore(newNode, node.nextSibling);
-          } else {
-            entries.appendChild(newNode);
-          }
-          actions[i++]      = this.toggleSSL;
-          node              = newNode;
-        }
-        node.id             = 'endconfig';
-      }
+// Helper to add a context menu entry before a label or id
+ShellInABox.prototype.addContextMenuEntry = function(entries, actions, options) {
+  // options: { label, onClick, beforeLabel, beforeId, id, icon, inputType, inputId, inputHandler }
+  // Luôn thêm entry mới vào cuối menu và push action vào cuối mảng actions
+  var newNode = document.createElement('li');
+  newNode.innerHTML = (options.icon ? options.icon + ' ' : '') + options.label;
+  newNode.style.cursor = 'pointer';
+  if (options.id) newNode.id = options.id;
+  actions.push(options.onClick);
+  entries.appendChild(newNode);
+  if (options.inputType && options.inputId && !document.getElementById(options.inputId)) {
+    var input = document.createElement('input');
+    input.type = options.inputType;
+    input.id = options.inputId;
+    input.style.display = 'none';
+    document.body.appendChild(input);
+    if (typeof options.inputHandler === 'function') {
+      input.addEventListener('change', options.inputHandler);
     }
   }
+};
 
+ShellInABox.prototype.extendContextMenu = function(entries, actions) {
+  // Thêm mục Upload file... (có thể mở rộng thêm các mục khác sau này)
+  this.addContextMenuEntry(entries, actions, {
+    label: 'Upload file...',
+    inputType: 'file',
+    inputId: 'contextUploadInput',
+    onClick: function() {
+      var input = document.getElementById('contextUploadInput');
+      if (input) input.click();
+    },
+    inputHandler: function(e) {
+      var file = this.files[0];
+      if (!file) return;
+      var formData = new FormData();
+      formData.append('file', file);
+      // Lấy session từ window.shellinabox.session
+      var session = window.shellinabox && window.shellinabox.session;
+      session = session ? session : this.session;
+      var url = '/upload' + (session ? '?session=' + encodeURIComponent(session) : '');
+      //console.log("session:" + session);
+      fetch(url, { method: 'POST', body: formData })
+        .then(response => response.text().then(text => {
+          // Hiển thị dialog HTML custom để user copy và có nút đóng
+          if (text && text.trim()) {
+            var dialog = document.createElement('div');
+            dialog.style.position = 'fixed';
+            dialog.style.left = '50%';
+            dialog.style.top = '30%';
+            dialog.style.transform = 'translate(-50%, -30%)';
+            dialog.style.background = '#fff';
+            dialog.style.border = '1px solid #888';
+            dialog.style.boxShadow = '0 2px 16px #0004';
+            dialog.style.zIndex = 99999;
+            dialog.style.padding = '20px 24px 16px 24px';
+            dialog.style.minWidth = '320px';
+            dialog.style.maxWidth = '90vw';
+            dialog.style.borderRadius = '8px';
+            dialog.innerHTML =
+              '<div style="font-weight:bold;margin-bottom:8px;">Upload result</div>' +
+              '<textarea readonly style="width:100%;min-height:60px;resize:vertical;font-size:14px;box-sizing:border-box;">' +
+              text.trim().replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+              '</textarea>' +
+              '<div style="text-align:right;margin-top:12px;">' +
+              '<button id="uploadDialogCloseBtn" style="padding:4px 18px;font-size:14px;">Đóng</button>' +
+              '</div>';
+            document.body.appendChild(dialog);
+            document.getElementById('uploadDialogCloseBtn').onclick = function() {
+              document.body.removeChild(dialog);
+            };
+          } else {
+            alert('Upload: ' + text);
+          }
+        }))
+        .catch(err => {
+          alert('Upload failed: ' + err);
+        });
+      this.value = '';
+    }
+  });
+  // Không cần gán lại actions từ oldActions nữa để tránh lệch chỉ số
 };
 
 ShellInABox.prototype.messageInit = function() {

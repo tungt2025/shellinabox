@@ -115,6 +115,7 @@ void httpSetCallback(HttpConnection *http,
                                      const char *, int), void *arg);
 void *httpGetPrivate(HttpConnection *http);
 void *httpSetPrivate(HttpConnection *http, void *private);
+void httpSendRawReply(struct HttpConnection *http, int code, const char *msg, const char *fmt, ...) ;
 void httpSendReply(HttpConnection *http, int code,
                    const char *msg, const char *fmt, ...)
   __attribute__((format(printf, 4, 5)));

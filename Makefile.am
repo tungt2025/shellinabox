@@ -85,20 +85,22 @@ libhttp_la_LDFLAGS   = -export-symbols  $(top_srcdir)/libhttp/libhttp.sym     \
                        -version 1:0:0
 
 shellinaboxd_SOURCES = shellinabox/shellinaboxd.c                             \
-                       shellinabox/externalfile.c                             \
-                       shellinabox/externalfile.h                             \
-                       shellinabox/launcher.c                                 \
-                       shellinabox/launcher.h                                 \
-                       shellinabox/privileges.c                               \
-                       shellinabox/privileges.h                               \
-                       shellinabox/service.c                                  \
-                       shellinabox/service.h                                  \
-                       shellinabox/session.c                                  \
-                       shellinabox/session.h                                  \
-                       shellinabox/usercss.c                                  \
-                       shellinabox/usercss.h                                  \
-                       shellinabox/cgi_root.html                              \
-                       shellinabox/root_page.html                             \
+					   shellinabox/externalfile.c                             \
+					   shellinabox/externalfile.h                             \
+					   shellinabox/launcher.c                                 \
+					   shellinabox/launcher.h                                 \
+					   shellinabox/privileges.c                               \
+					   shellinabox/privileges.h                               \
+					   shellinabox/service.c                                  \
+					   shellinabox/service.h                                  \
+					   shellinabox/session.c                                  \
+					   shellinabox/session.h                                  \
+					   shellinabox/usercss.c                                  \
+					   shellinabox/usercss.h                                  \
+					   shellinabox/custom_handlers.c                          \
+					   shellinabox/custom_handlers.h                          \
+					   shellinabox/cgi_root.html                              \
+					   shellinabox/root_page.html                             \
                        shellinabox/vt100.jspp                                 \
                        shellinabox/shell_in_a_box.jspp                        \
                        shellinabox/styles.css                                 \

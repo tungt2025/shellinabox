@@ -31,10 +31,10 @@ WORKDIR /usr/src/shellinabox
 # Tạo user không phải root để chạy service
 RUN useradd -m -s /bin/false shellinabox || true
 
-# Build từ source: autogen/configure/make
+# Build từ source: autogen/configure/make -j$(nproc)
     RUN export LDFLAGS="-lssl -lcrypto" &&  autoreconf -i \
         && ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
-        && make -j$(nproc) \
+        && make  \
         && make install
 
 # Tạo thư mục runtime và set quyền

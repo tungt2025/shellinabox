@@ -1,3 +1,4 @@
+#include <stdarg.h>
 // httpconnection.c -- Manage state machine for HTTP connections
 // Copyright (C) 2008-2010 Markus Gutschke <markus@shellinabox.com>
 //
@@ -1747,7 +1748,37 @@ void *httpSetPrivate(struct HttpConnection *http, void *private) {
   http->private = private;
   return old;
 }
-
+// Gửi plain text trả về client, không bọc HTML
+void httpSendRawReply(struct HttpConnection *http, int code, const char *msg, const char *fmt, ...) {
+  http->code = code;
+  char *body = NULL;
+  if (fmt != NULL) {
+    va_list ap;
+    va_start(ap, fmt);
+    body = vStringPrintf(NULL, fmt, ap);
+    va_end(ap);
+  } else {
+    body = strdup(msg);
+  }
+  char *response = stringPrintf(NULL,
+    "HTTP/1.1 %d %s\r\n"
+    "%s"
+    "Content-Type: text/plain; charset=utf-8\r\n"
+    "Content-Length: %ld\r\n"
+    "\r\n",
+    code, msg,
+    code != 200 ? "Connection: close\r\n" : "",
+    (long)strlen(body));
+  int isHead = http->method && !strcmp(http->method, "HEAD");
+  if (!isHead) {
+    response = stringPrintf(response, "%s", body);
+  }
+  free(body);
+  httpTransfer(http, response, strlen(response));
+  if (code != 200 || isHead) {
+    httpCloseRead(http);
+  }
+}
 void httpSendReply(struct HttpConnection *http, int code,
                    const char *msg, const char *fmt, ...) {
   http->code     = code;

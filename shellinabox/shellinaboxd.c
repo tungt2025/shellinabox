@@ -1,4 +1,20 @@
+// Ensure types are defined before use
+#include <sys/types.h>
+#include <errno.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 #include "custom_handlers.h"
+
+#ifndef HAVE_GETRESUID
+static int getresuid(uid_t *ruid, uid_t *euid, uid_t *suid) {
+  return syscall(SYS_getresuid, ruid, euid, suid);
+}
+#endif
+#ifndef HAVE_GETRESGID
+static int getresgid(gid_t *rgid, gid_t *egid, gid_t *sgid) {
+  return syscall(SYS_getresgid, rgid, egid, sgid);
+}
+#endif
 // shellinaboxd.c -- A custom web server that makes command line applications
 //                   available as AJAX web applications.
 // Copyright (C) 2008-2010 Markus Gutschke <markus@shellinabox.com>
@@ -64,6 +80,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/syscall.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -122,7 +139,7 @@ static char           *certificateDir;
 static int            certificateFd     = -1;
 static HashMap        *externalFiles;
 static Server         *cgiServer;
-static char           *cgiSessionKey;
+char           *cgiSessionKey;
 static int            cgiSessions;
 static char           *cssStyleSheet;
 static struct UserCSS *userCSSList;
