@@ -117,7 +117,50 @@
        correctly deal with the enclosing frameset (if any), if we do not
        do this
    -->
-  <body onload="setTimeout('window.shellinabox = new ShellInABox()', 100)"
-        scroll="no"><noscript>JavaScript
-    must be enabled for ShellInABox</noscript></body>
+  <body onload="setTimeout('window.shellinabox = new ShellInABox()', 100)" scroll="no">
+    <div style="padding:8px;background:#f5f5f5;border-bottom:1px solid #ccc;">
+      <label for="fileUpload" id="uploadLabel" style="display:none;">Upload file: </label>
+      <input type="file" id="fileUpload" name="fileUpload" style="display:none;" />
+    </div>
+    <script>
+        function uploadFileAjax() {
+          var fileInput = document.getElementById('uploadFile');
+          if (!fileInput.files.length) {
+            document.getElementById('uploadResult').innerText = 'No file selected.';
+            return;
+          }
+          var formData = new FormData();
+          formData.append('file', fileInput.files[0]);
+          fetch('/upload', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.text().then(text => {
+            document.getElementById('uploadResult').innerText = text;
+          }))
+          .catch(err => {
+            document.getElementById('uploadResult').innerText = 'Upload failed: ' + err;
+          });
+        }
+      </script>
+      <form id="uploadForm" enctype="multipart/form-data" onsubmit="return false;">
+        <input type="file" id="uploadFile" name="file">
+        <button type="button" onclick="uploadFileAjax()">Upload</button>
+      </form>
+      <div id="uploadResult"></div>
+      function checkUploadButton() {
+        var btn = document.getElementById('fileUpload');
+        var lbl = document.getElementById('uploadLabel');
+        if (window.shellinabox && window.shellinabox.connected) {
+          btn.style.display = '';
+          lbl.style.display = '';
+        } else {
+          btn.style.display = 'none';
+          lbl.style.display = 'none';
+        }
+      }
+      setInterval(checkUploadButton, 1000);
+    </script>
+    <noscript>JavaScript must be enabled for ShellInABox</noscript>
+  </body>
 </html>

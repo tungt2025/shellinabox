@@ -1,3 +1,4 @@
+#include "custom_handlers.h"
 // shellinaboxd.c -- A custom web server that makes command line applications
 //                   available as AJAX web applications.
 // Copyright (C) 2008-2010 Markus Gutschke <markus@shellinabox.com>
@@ -1428,7 +1429,11 @@ int main(int argc, char * const argv[]) {
   // Disable /quit handler
   serverRegisterHttpHandler(server, "/quit", NULL, NULL);
 
-  // Register HTTP handler(s)
+
+  // Đăng ký các handler mở rộng
+  registerCustomHandlers(server);
+
+  // Đăng ký các service terminal như cũ
   for (int i = 0; i < numServices; i++) {
     serverRegisterHttpHandler(server, services[i]->path,
                               shellInABoxHttpHandler, services[i]);
@@ -1439,9 +1444,6 @@ int main(int argc, char * const argv[]) {
 
   // Start the server
   if (!sigsetjmp(jmpenv, 1)) {
-    // Clean up upon orderly shut down. Do _not_ cleanup if we die
-    // unexpectedly, as we cannot guarantee if we are still in a valid
-    // static. This means, we should never catch SIGABRT.
     static const int signals[] = { SIGHUP, SIGINT, SIGQUIT, SIGTERM };
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
@@ -1452,6 +1454,9 @@ int main(int argc, char * const argv[]) {
     }
     serverLoop(server);
   }
+
+  // Giải phóng handler mở rộng nếu cần
+  freeCustomHandlers();
 
   // Clean up
   deleteServer(server);
